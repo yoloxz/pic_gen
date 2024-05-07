@@ -1,81 +1,63 @@
 <template>
-  <div class="flex flex-col  px-16 py-4 space-y-2" >
-    <div class="text-3xl py-3">Go Http-Server</div>
-    <!-- <div class="w-full h-[1px] bg-gray-500"></div> -->
-    <div class="flex space-x-2">
-      <span class="px-3 py-2 hover:bg-blue-400 bg-blue-200 shadow-md rounded-md cursor-pointer">上传文件</span>
-      <span class="px-3 py-2 hover:bg-blue-400 bg-blue-200 shadow-md rounded-md cursor-pointer">新建文件夹</span>
+  <!-- 输入prompt生成图片 -->
+  <div class="flex w-screen h-screen space-x-2 bg-slate-300">
+    <div class="w-1/4 bg-slate-50 flex flex-col">
+      <span class="text-2xl font-bold p-4">Prompt</span>
+      <input type="text" class="border-2 border-gray-300 p-2 m-2" v-model="prompt" @keyup.enter="generateImage" />
+      <span class="text-2xl font-bold p-4">Seed</span>
+      <input type="number" class="border-2 border-gray-300 p-2 m-2" v-model="seed" @keyup.enter="generateImage" />
+      <span class="text-2xl font-bold p-4">guide scale</span>
+      <input type="number" class="border-2 border-gray-300 p-2 m-2" v-model="guideScale" @keyup.enter="generateImage" />
+      <span class="text-2xl font-bold p-4">nums of pics</span>
+      <!-- 输入数字 -->
+      <input type="number" class="border-2 border-gray-300 p-2 m-2" v-model="numsOfPics" @keyup.enter="generateImage" />
     </div>
-    <div class="w-full h-1 bg-gray-500"></div>
-    <div class="flex flex-col space-y-1">
-      <!-- 循环输出文件 -->
-      <div v-for="file in fileList" :key="file.name" :file="file" class="flex content-center items-center">
+    <div class="w-3/4 bg-slate-100 flex flex-col">
+      <span class="text-2xl font-bold p-4">Generated Image</span>
+      <div class="flex flex-col h-full">
+        <img v-for="image in images" :src="image.url" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-
-const fileList = [
-  {
-    name: '文件1',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-  {
-    name: '文件2',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-  {
-    name: '文件3',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-  {
-    name: '文件4',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-  {
-    name: '文件5',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-  {
-    name: '文件6',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-  {
-    name: '文件7',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-  {
-    name: '文件8',
-    type: 'file',
-    size: '1.2M',
-    time: '2021-10-10 10:10:10',
-  },
-]    
+import { defineComponent, ref } from 'vue';
+import service from '../service/service';
 
 export default defineComponent({
-  setup(props, context) {
+  setup() {
+    const prompt = ref('');
+    const seed = ref('');
+    const guideScale = ref('');
+    const numsOfPics = ref('');
+    const images = ref([]);
+
+    async function generateImage() {
+      const res = await service.generateImage({
+        prompt: prompt.value,
+        seed: seed.value,
+        guideScale: guideScale.value,
+        numsOfPics: numsOfPics.value,
+        enable_safety_checks: true,
+      });
+      if (res.status === 200) {
+        images.value = res.data.images;
+        console.log(images.value);
+      } else {
+        console.error(res.data);
+      }
+    }
 
     return {
-      fileList,
-    }
+      prompt,
+      seed,
+      guideScale,
+      numsOfPics,
+      generateImage,
+      images,
+    };
   },
-})
+});
 
 </script>
